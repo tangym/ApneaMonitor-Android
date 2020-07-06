@@ -1,0 +1,7 @@
+rootProject.name='ApneaMonitor'
+include ':mobile'
+include ':watch'
+include ':watch_noservice'
+include ':sleepacc'
+include ':sleepacc_bufwriter'
+include ':sensorlogger'
