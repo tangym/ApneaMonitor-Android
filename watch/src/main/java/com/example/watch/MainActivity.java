@@ -1,6 +1,8 @@
 package com.example.watch;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -13,6 +15,8 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LifecycleRegistry;
@@ -35,6 +39,12 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
 
     private LifecycleRegistry lifecycleRegistry;
     private PowerManager.WakeLock wakeLock;
+    private String[] permissions = new String[]{
+            Manifest.permission.WAKE_LOCK,
+            Manifest.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+            Manifest.permission.WRITE_EXTERNAL_STORAGE,
+    };
+    private static final int PERMISSION_REQUEST_CODE = 0;
 
     private Button buttonStart;
     private Button buttonStop;
@@ -49,40 +59,19 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        if ( !appDirectory.exists() ) {
-            appDirectory.mkdir();
+        // Check whether the permissions are granted
+        boolean isGranted = true;
+        for (String permission: permissions) {
+            if (ContextCompat.checkSelfPermission(this, permission) != PackageManager.PERMISSION_GRANTED) {
+                isGranted = false;
+                break;
+            }
         }
-        if ( !dataDirectory.exists() ) {
-            dataDirectory.mkdir();
+        if (isGranted) {
+            initialize();
+        } else {
+            ActivityCompat.requestPermissions(this, permissions, PERMISSION_REQUEST_CODE);
         }
-        if ( !logDirectory.exists() ) {
-            logDirectory.mkdir();
-        }
-
-        // Prevent CPU halt after screen lock
-        setAmbientEnabled();
-        Log.i(TAG, "Partial wake lock acquired.");
-        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
-        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-                "watch:SensorLoggerWakelockTag");
-        wakeLock.acquire();
-        // Disable doze mode for this app
-        Log.i(TAG, "Battery optimization ignored.");
-        boolean isIgnoringBatteryOptimizations = powerManager.isIgnoringBatteryOptimizations(getPackageName());
-        if (!isIgnoringBatteryOptimizations) {
-            Intent intent = new Intent();
-            intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
-            intent.setData(Uri.parse("package:" + getPackageName()));
-            startActivity(intent);
-        }
-
-        // Register lifecycle-aware components
-        lifecycleRegistry = new LifecycleRegistry(this);
-        lifecycleRegistry.markState(Lifecycle.State.CREATED);
-
-        this.getLifecycle().addObserver(new LogcatLogger(logFile));
-        this.getLifecycle().addObserver(new SystemInformationLogger(this, systemInformationFile));
-        this.getLifecycle().addObserver(new BatteryLogger(this, batteryStatusFile));
 
         Log.d(TAG, "MainActivity.onCreate() is called.");
 
@@ -120,6 +109,73 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
                 return true;
             }
         });
+    }
+
+    public void initialize() {
+        if ( !appDirectory.exists() ) {
+            appDirectory.mkdir();
+        }
+        if ( !dataDirectory.exists() ) {
+            dataDirectory.mkdir();
+        }
+        if ( !logDirectory.exists() ) {
+            logDirectory.mkdir();
+        }
+
+        // Prevent CPU halt after screen lock
+        setAmbientEnabled();
+        Log.i(TAG, "Partial wake lock acquired.");
+        PowerManager powerManager = (PowerManager) getSystemService(POWER_SERVICE);
+        wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                "watch:SensorLoggerWakelockTag");
+        wakeLock.acquire();
+        // Disable doze mode for this app
+        Log.i(TAG, "Battery optimization ignored.");
+        boolean isIgnoringBatteryOptimizations = powerManager.isIgnoringBatteryOptimizations(getPackageName());
+        if (!isIgnoringBatteryOptimizations) {
+            Intent intent = new Intent();
+            intent.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS);
+            intent.setData(Uri.parse("package:" + getPackageName()));
+            startActivity(intent);
+        }
+
+        // Register lifecycle-aware components
+        lifecycleRegistry = new LifecycleRegistry(this);
+        lifecycleRegistry.markState(Lifecycle.State.CREATED);
+
+        this.getLifecycle().addObserver(new LogcatLogger(logFile));
+        this.getLifecycle().addObserver(new SystemInformationLogger(this, systemInformationFile));
+        this.getLifecycle().addObserver(new BatteryLogger(this, batteryStatusFile));
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0) {
+                boolean isGranted = true;
+                for (int grantResult: grantResults) {
+                    if (grantResult != PackageManager.PERMISSION_GRANTED) {
+                        isGranted = false;
+                        break;
+                    }
+                }
+                if (isGranted) {
+                    Log.d(TAG, "Permission granted.");
+                    initialize();
+                } else {
+                    Log.d(TAG, "Permission not granted.");
+                    // TODO: explain the feature is not available due to the permission is not granted
+                    this.textView.setText("Permission not granted.");
+                    this.textView.setTextColor(Color.RED);
+                }
+            } else {
+                Log.d(TAG, "Permission not granted.");
+                // TODO: explain the feature is not available due to the permission is not granted
+                this.textView.setText("Permission not granted.");
+                this.textView.setTextColor(Color.RED);
+            }
+        }
     }
 
     @Override
