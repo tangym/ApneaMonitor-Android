@@ -17,23 +17,38 @@ public class SystemInformationLogger implements LifecycleObserver {
     static final public SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.getDefault());
 
     private Context context;
-    private File outputFile;
-    FileWriter writer;
+    private File outputDirectory;
 
-    public SystemInformationLogger(Context context, File systemInformationFile) {
+    public SystemInformationLogger(Context context, File sysInfoDirectory) {
         this.context = context;
-        this.outputFile = systemInformationFile;
+        this.outputDirectory = sysInfoDirectory;
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     public void run() {
-        try {
-            writer = new FileWriter(outputFile);
+        File outputFile = new File(outputDirectory, "sensors.csv");
+        logSensorInfo(outputFile);
+    }
 
-            // TODO: add more information
+    public void logSensorInfo(File outputFile) {
+        try {
+            FileWriter writer = new FileWriter(outputFile);
             SensorManager sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
             List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_ALL);
-            writer.write(sensorList.toString());
+            // writer.write(sensorList.toString());
+            writer.write("id,name,typeStr,type,resolution,power,reportingMode,maxDelay,minDelay,maxRange," +
+                    "fifoMaxEventCount,fifoReservedEventCount,highestDirectReportRateLevel,vendor,version," +
+                    "isAdditionalInfoSupported,isDirectChannelTypeSupported,isDynamicSensor,isWakeUpSensor\n");
+            for (Sensor sensor: sensorList) {
+                String message = String.format("%d,\"%s\",\"%s\",%d,%f,%f,%d,%d,%d,%f,%d,%d,%d,\"%s\",%d,%b,%b,%b,%b\n",
+                        sensor.getId(), sensor.getName(), sensor.getStringType(),
+                        sensor.getType(), sensor.getResolution(), sensor.getPower(), sensor.getReportingMode(),
+                        sensor.getMaxDelay(), sensor.getMinDelay(), sensor.getMaximumRange(),
+                        sensor.getFifoMaxEventCount(), sensor.getFifoReservedEventCount(), sensor.getHighestDirectReportRateLevel(),
+                        sensor.getVendor(), sensor.getVersion(), sensor.isAdditionalInfoSupported(),
+                        sensor.isDirectChannelTypeSupported(0), sensor.isDynamicSensor(), sensor.isWakeUpSensor());
+                writer.write(message);
+            }
 
             writer.close();
         } catch (IOException e) {

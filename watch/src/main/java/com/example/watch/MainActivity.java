@@ -31,9 +31,9 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
     public static final File appDirectory = new File( "sdcard/sleepacc" );
     public static final File dataDirectory = new File(appDirectory +"/data");
     public static final File logDirectory = new File( appDirectory + "/log" );
+    public static final File sysInfoDirectory = new File(appDirectory, "/sysinfo");
     public static final File batteryStatusFile = new File( logDirectory, "battery.csv" );
     public static final File logFile = new File( logDirectory, "logcat.txt" );
-    public static final File systemInformationFile = new File(logDirectory, "systemInfo.txt");
 
     public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.getDefault());
 
@@ -121,6 +121,9 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
         if ( !logDirectory.exists() ) {
             logDirectory.mkdir();
         }
+        if ( !sysInfoDirectory.exists() ) {
+            sysInfoDirectory.mkdir();
+        }
 
         // Prevent CPU halt after screen lock
         setAmbientEnabled();
@@ -144,7 +147,7 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
         lifecycleRegistry.markState(Lifecycle.State.CREATED);
 
         this.getLifecycle().addObserver(new LogcatLogger(logFile));
-        this.getLifecycle().addObserver(new SystemInformationLogger(this, systemInformationFile));
+        this.getLifecycle().addObserver(new SystemInformationLogger(this, sysInfoDirectory));
         this.getLifecycle().addObserver(new BatteryLogger(this, batteryStatusFile));
     }
 
