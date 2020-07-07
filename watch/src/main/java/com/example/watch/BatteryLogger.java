@@ -9,9 +9,7 @@ import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -22,8 +20,7 @@ public class BatteryLogger implements LifecycleObserver {
 
     private Context context;
     private File outputFile;
-    //    BufferedWriter writer;
-    FileOutputStream writer;
+    private BufferedWriter writer;
 
     private BroadcastReceiver mBatteryInfoReceiver = new BroadcastReceiver() {
         @Override
@@ -43,8 +40,7 @@ public class BatteryLogger implements LifecycleObserver {
             String template = "%s,%b,%d,%d,%d,%d,%d,%s,%d,%d\n";
             try {
                 writer.write(String.format(template,
-                        timestamp, isLow, level, scale, health, powerSource, status, technology, temperature, voltage).getBytes());
-//                writer.flush();
+                        timestamp, isLow, level, scale, health, powerSource, status, technology, temperature, voltage));
             } catch (IOException ioe) {
                 ioe.printStackTrace();
             }
@@ -58,14 +54,22 @@ public class BatteryLogger implements LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     public void start() {
-        // Initialize battery status log writer
         try {
-//            writer = new BufferedWriter(new FileWriter(outputFile), 200);
-            writer = new FileOutputStream(outputFile);
+            writer = new BufferedWriter(new FileWriter(outputFile));    // default: 8192 byte
+            writer.write("timestamp,isLow,level,scale,health,powerSource,status,technology,temperature,voltage\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
         context.registerReceiver(this.mBatteryInfoReceiver, new IntentFilter(Intent.ACTION_BATTERY_CHANGED));
     }
 
+    @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
+    public void stop() {
+        context.unregisterReceiver(this.mBatteryInfoReceiver);
+        try {
+            writer.close();
+        } catch ( IOException ioe ) {
+            ioe.printStackTrace();
+        }
+    }
 }

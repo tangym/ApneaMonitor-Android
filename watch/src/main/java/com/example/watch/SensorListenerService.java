@@ -28,13 +28,14 @@ public class SensorListenerService extends Service implements LifecycleOwner {
         lifecycleRegistry = new LifecycleRegistry(this);
         lifecycleRegistry.markState(Lifecycle.State.CREATED);
 
-        this.getLifecycle().addObserver(new SensorLogger(this));
+        this.getLifecycle().addObserver(new SensorLogger(this, MainActivity.dataDirectory));
     }
 
     @Override
     public void onDestroy() {
         super.onDestroy();
         Log.d(TAG, "SensorListenerService.onDestroy() is called.");
+        lifecycleRegistry.markState(Lifecycle.State.DESTROYED);
     }
 
     @Override

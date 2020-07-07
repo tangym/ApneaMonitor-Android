@@ -30,11 +30,11 @@ public class SystemInformationLogger implements LifecycleObserver {
         try {
             writer = new FileWriter(outputFile);
 
+            // TODO: add more information
             SensorManager sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
             List<Sensor> sensorList = sensorManager.getSensorList(Sensor.TYPE_ALL);
             writer.write(sensorList.toString());
 
-            writer.flush();
             writer.close();
         } catch (IOException e) {
             e.printStackTrace();

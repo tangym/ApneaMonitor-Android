@@ -88,9 +88,9 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
 
         // Initialize other variables
         isRunning = false;
-        buttonStart = (Button) findViewById(R.id.buttonStart);
-        buttonStop = (Button) findViewById(R.id.buttonStop);
-        textView = (TextView) findViewById(R.id.textView);
+        buttonStart = findViewById(R.id.buttonStart);
+        buttonStop = findViewById(R.id.buttonStop);
+        textView = findViewById(R.id.textView);
         buttonStop.setEnabled(false);
 
         buttonStart.setOnTouchListener(new View.OnTouchListener() {
@@ -127,6 +127,7 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
         super.onDestroy();
         Log.d(TAG, "MainActivity.onDestroy() is called.");
         wakeLock.release();
+        lifecycleRegistry.markState(Lifecycle.State.DESTROYED);
     }
 
     @Override
@@ -151,7 +152,6 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
     protected void onStop() {
         super.onStop();
         Log.d(TAG, "MainActivity.onStop() is called.");
-        // TODO: update lifecycleRegister.markState()
     }
 
     @Override

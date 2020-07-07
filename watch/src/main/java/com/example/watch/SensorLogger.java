@@ -24,45 +24,61 @@ public class SensorLogger implements SensorEventListener2, LifecycleObserver {
 
     private Context context;
     private SensorManager sensorManager;
+    private SensorConfiguration[] sensors = {
+            new SensorConfiguration(android.hardware.Sensor.TYPE_ACCELEROMETER, "ACC", SensorManager.SENSOR_DELAY_UI),
+    };
+    private File dataDirectory;
+    private FileWriter writer = null;
+
     int dataBufferSize = 1;
     int dataBufferIndex = 0;
     float[][] dataBuffer = new float[dataBufferSize][6];
     String[] dataSensorTypeBuffer = new String[dataBufferSize];
     String[] dataTimestampBuffer = new String[dataBufferSize];
 
-    SensorConfiguration[] sensors = {
-            new SensorConfiguration(android.hardware.Sensor.TYPE_ACCELEROMETER, "ACC", SensorManager.SENSOR_DELAY_UI),
-    };
-
-    private FileWriter writer = null;
-
-    public SensorLogger(Context context) {
+    public SensorLogger(Context context, File dataDirectory) {
         Log.d(TAG, "SensorLogger created.");
         for (SensorConfiguration sensor: sensors) {
             Log.d(TAG, sensor.toString());
         }
 
         this.context = context;
-        sensorManager = (SensorManager) this.context.getSystemService(Context.SENSOR_SERVICE);
+        this.sensorManager = (SensorManager) this.context.getSystemService(Context.SENSOR_SERVICE);
+        this.dataDirectory = dataDirectory;
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     public void start() {
-        Log.d(TAG, "SensorLogger.initialize() is called on create.");
+        Log.d(TAG, "SensorLogger.start() is called on create.");
 
         for (SensorConfiguration sensorConfig : sensors) {
             sensorManager.registerListener(this, sensorManager.getDefaultSensor(sensorConfig.type),
                     sensorConfig.delay);
         }
 
-        Log.d(TAG, "Writing to " + MainActivity.dataDirectory);
         String startTime = dateFormat.format(new Date());
-        String fileName = "s" + startTime + ".csv";
+        String fileName = startTime + "_config" + ".json";
         try {
-            writer = new FileWriter(new File(MainActivity.dataDirectory, fileName));
+            writer = new FileWriter(new File(dataDirectory, fileName));
             for (SensorConfiguration sensor: sensors) {
                 writer.write(sensor + "\n");
             }
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            try {
+                if (writer != null) {
+                    writer.close();
+                }
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
+            }
+        }
+
+        fileName = startTime + "_data" + ".csv";
+        try {
+            writer = new FileWriter(new File(dataDirectory, fileName));
+            writer.write("timestamp,sensorType,value0,value1,value2,value3,value4,value5\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -70,13 +86,11 @@ public class SensorLogger implements SensorEventListener2, LifecycleObserver {
 
     @OnLifecycleEvent(Lifecycle.Event.ON_DESTROY)
     public void stop() {
-        // TODO: unregister sensors, flush sensor events, flush data to sdcard, free file writer
         Log.d(TAG, "SensorLogger.free() is called on destroy.");
         sensorManager.flush(this);
         sensorManager.unregisterListener(this);
         flushDataBuffer();
         try {
-            writer.flush();
             writer.close();
         } catch (IOException ioe) {
             ioe.printStackTrace();
