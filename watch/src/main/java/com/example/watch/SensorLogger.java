@@ -78,7 +78,7 @@ public class SensorLogger implements SensorEventListener2, LifecycleObserver {
         fileName = startTime + "_data" + ".csv";
         try {
             writer = new FileWriter(new File(dataDirectory, fileName));
-            writer.write("timestamp,sensorType,value0,value1,value2,value3,value4,value5\n");
+            writer.write("timestamp,sensor,value0,value1,value2,value3,value4,value5\n");
         } catch (IOException e) {
             e.printStackTrace();
         }
