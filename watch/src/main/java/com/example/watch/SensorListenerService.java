@@ -1,27 +1,14 @@
 package com.example.watch;
 
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener2;
-import android.hardware.SensorManager;
 import android.os.IBinder;
 import android.util.Log;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LifecycleRegistry;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.Locale;
 
 public class SensorListenerService extends Service implements LifecycleOwner {
     private static final String TAG = MainActivity.TAG; //"watch:SensorListenerService";

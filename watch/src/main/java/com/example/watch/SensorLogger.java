@@ -1,19 +1,14 @@
 package com.example.watch;
 
 import android.content.Context;
-import android.content.Intent;
 import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener2;
 import android.hardware.SensorManager;
-import android.net.Uri;
-import android.os.PowerManager;
-import android.provider.Settings;
 import android.util.Log;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleObserver;
 import androidx.lifecycle.OnLifecycleEvent;
-import com.google.android.gms.dynamic.LifecycleDelegate;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -22,7 +17,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
-import static android.content.Context.POWER_SERVICE;
 
 public class SensorLogger implements SensorEventListener2, LifecycleObserver {
     public final String TAG = "SensorLogger";

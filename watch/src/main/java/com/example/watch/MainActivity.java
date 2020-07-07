@@ -1,16 +1,8 @@
 package com.example.watch;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.graphics.Color;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener2;
-import android.hardware.SensorManager;
 import android.net.Uri;
-import android.os.BatteryManager;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.provider.Settings;
@@ -27,9 +19,7 @@ import androidx.lifecycle.LifecycleRegistry;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.Date;
 import java.util.Locale;
-
 
 
 public class MainActivity extends WearableActivity implements LifecycleOwner {
