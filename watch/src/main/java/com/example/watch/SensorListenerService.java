@@ -11,7 +11,7 @@ import androidx.lifecycle.LifecycleRegistry;
 
 
 public class SensorListenerService extends Service implements LifecycleOwner {
-    private static final String TAG = MainActivity.TAG; //"watch:SensorListenerService";
+    private static final String TAG = "watch:SensorListenerService";
     private LifecycleRegistry lifecycleRegistry;
 
     @Override

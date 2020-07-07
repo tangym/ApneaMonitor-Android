@@ -19,10 +19,11 @@ import java.util.Locale;
 
 
 public class SensorLogger implements SensorEventListener2, LifecycleObserver {
-    public final String TAG = "SensorLogger";
-    private Context context = null;
-    private SensorManager sensorManager = null;
+    public static final String TAG = "watch:SensorLogger";
+    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.getDefault());
 
+    private Context context;
+    private SensorManager sensorManager;
     int dataBufferSize = 1;
     int dataBufferIndex = 0;
     float[][] dataBuffer = new float[dataBufferSize][6];
@@ -40,21 +41,22 @@ public class SensorLogger implements SensorEventListener2, LifecycleObserver {
         for (SensorConfiguration sensor: sensors) {
             Log.d(TAG, sensor.toString());
         }
+
         this.context = context;
+        sensorManager = (SensorManager) this.context.getSystemService(Context.SENSOR_SERVICE);
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     public void start() {
         Log.d(TAG, "SensorLogger.initialize() is called on create.");
 
-        sensorManager = (SensorManager) context.getSystemService(Context.SENSOR_SERVICE);
         for (SensorConfiguration sensorConfig : sensors) {
             sensorManager.registerListener(this, sensorManager.getDefaultSensor(sensorConfig.type),
                     sensorConfig.delay);
         }
 
         Log.d(TAG, "Writing to " + MainActivity.dataDirectory);
-        String startTime = new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.getDefault()).format(new Date());
+        String startTime = dateFormat.format(new Date());
         String fileName = "s" + startTime + ".csv";
         try {
             writer = new FileWriter(new File(MainActivity.dataDirectory, fileName));

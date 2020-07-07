@@ -17,11 +17,13 @@ import java.util.Date;
 import java.util.Locale;
 
 public class BatteryLogger implements LifecycleObserver {
-    private Context context;
-    private File batteryStatusFile;
-    //    BufferedWriter batteryStatusWriter;
-    FileOutputStream batteryStatusWriter;
+    public static final String TAG = "watch:BatteryLogger";
     static final public SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.getDefault());
+
+    private Context context;
+    private File outputFile;
+    //    BufferedWriter writer;
+    FileOutputStream writer;
 
     private BroadcastReceiver mBatteryInfoReceiver = new BroadcastReceiver() {
         @Override
@@ -40,9 +42,9 @@ public class BatteryLogger implements LifecycleObserver {
             String timestamp = dateFormat.format(new Date());
             String template = "%s,%b,%d,%d,%d,%d,%d,%s,%d,%d\n";
             try {
-                batteryStatusWriter.write(String.format(template,
+                writer.write(String.format(template,
                         timestamp, isLow, level, scale, health, powerSource, status, technology, temperature, voltage).getBytes());
-//                batteryStatusWriter.flush();
+//                writer.flush();
             } catch (IOException ioe) {
                 ioe.printStackTrace();
             }
@@ -51,15 +53,15 @@ public class BatteryLogger implements LifecycleObserver {
 
     public BatteryLogger(Context context, File batteryStatusFile) {
         this.context = context;
-        this.batteryStatusFile = batteryStatusFile;
+        this.outputFile = batteryStatusFile;
     }
 
     @OnLifecycleEvent(Lifecycle.Event.ON_CREATE)
     public void start() {
         // Initialize battery status log writer
         try {
-//            batteryStatusWriter = new BufferedWriter(new FileWriter(batteryStatusFile), 200);
-            batteryStatusWriter = new FileOutputStream(batteryStatusFile);
+//            writer = new BufferedWriter(new FileWriter(outputFile), 200);
+            writer = new FileOutputStream(outputFile);
         } catch (IOException e) {
             e.printStackTrace();
         }

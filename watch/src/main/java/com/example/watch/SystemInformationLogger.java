@@ -13,11 +13,12 @@ import java.util.List;
 import java.util.Locale;
 
 public class SystemInformationLogger implements LifecycleObserver {
+    public static final String TAG = "watch:SystemInformationLogger";
+    static final public SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.getDefault());
+
     private Context context;
     private File outputFile;
     FileWriter writer;
-    static final public SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.getDefault());
-
 
     public SystemInformationLogger(Context context, File systemInformationFile) {
         this.context = context;

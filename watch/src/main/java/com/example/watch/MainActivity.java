@@ -28,26 +28,25 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
     public static final File dataDirectory = new File(appDirectory +"/data");
     public static final File logDirectory = new File( appDirectory + "/log" );
     public static final File batteryStatusFile = new File( logDirectory, "battery.csv" );
-    public static final File logFile = new File( logDirectory, "logcat" + System.currentTimeMillis() + ".txt" );
+    public static final File logFile = new File( logDirectory, "logcat.txt" );
     public static final File systemInformationFile = new File(logDirectory, "systemInfo.txt");
+
+    public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.getDefault());
+
     private LifecycleRegistry lifecycleRegistry;
     private PowerManager.WakeLock wakeLock;
 
-    Button buttonStart;
-    Button buttonStop;
-    TextView textView;
-    boolean isRunning;
-
-    static final public SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMddHHmmssSSS", Locale.getDefault());
-
+    private Button buttonStart;
+    private Button buttonStop;
+    private TextView textView;
+    private boolean isRunning;
     private Intent sensorListenerIntent = null;
 
-//    long bootTime = ((new Date()).getTime() - SystemClock.elapsedRealtime()) * 1000000;
+//    private long bootTime = ((new Date()).getTime() - SystemClock.elapsedRealtime()) * 1000000;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
 
         if ( !appDirectory.exists() ) {
@@ -67,6 +66,7 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
         wakeLock = powerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                 "watch:SensorLoggerWakelockTag");
         wakeLock.acquire();
+        // Disable doze mode for this app
         Log.i(TAG, "Battery optimization ignored.");
         boolean isIgnoringBatteryOptimizations = powerManager.isIgnoringBatteryOptimizations(getPackageName());
         if (!isIgnoringBatteryOptimizations) {
@@ -76,6 +76,7 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
             startActivity(intent);
         }
 
+        // Register lifecycle-aware components
         lifecycleRegistry = new LifecycleRegistry(this);
         lifecycleRegistry.markState(Lifecycle.State.CREATED);
 
@@ -84,6 +85,7 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
         this.getLifecycle().addObserver(new BatteryLogger(this, batteryStatusFile));
 
         Log.d(TAG, "MainActivity.onCreate() is called.");
+
         // Initialize other variables
         isRunning = false;
         buttonStart = (Button) findViewById(R.id.buttonStart);
@@ -97,6 +99,7 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
                 buttonStart.setEnabled(false);
                 buttonStop.setEnabled(true);
                 Log.d(TAG, "Start button clicked.");
+                // Start a background service to collect sensor data
                 sensorListenerIntent = new Intent(getApplicationContext(), SensorListenerService.class);
                 startForegroundService(sensorListenerIntent);
                 startService(sensorListenerIntent);
@@ -107,13 +110,13 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
         buttonStop.setOnTouchListener(new View.OnTouchListener() {
             @Override
             public boolean onTouch(View view, MotionEvent motionEvent) {
-                buttonStart.setEnabled(true);
                 buttonStop.setEnabled(false);
-                isRunning = false;
+                buttonStart.setEnabled(true);
                 if (sensorListenerIntent != null) {
                     stopService(sensorListenerIntent);
                     sensorListenerIntent = null;
                 }
+                isRunning = false;
                 return true;
             }
         });

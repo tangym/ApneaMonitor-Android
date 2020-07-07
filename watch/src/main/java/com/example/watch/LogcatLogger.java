@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 
 public class LogcatLogger implements LifecycleObserver {
+    public static final String TAG = "watch:LogcatLogger";
     private File logFile;
 
     public LogcatLogger(File logFile) {
