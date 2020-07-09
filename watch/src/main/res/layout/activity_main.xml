@@ -28,6 +28,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" android:id="@+id/buttonStart"/>
             <Button
+                    android:text="Send"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" android:id="@+id/buttonSend"/>
+            <Button
                     android:text="Stop"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content" android:id="@+id/buttonStop"/>

@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.PowerManager;
+import android.provider.ContactsContract;
 import android.provider.Settings;
 import android.support.wearable.activity.WearableActivity;
 import android.util.Log;
@@ -20,6 +21,7 @@ import androidx.core.content.ContextCompat;
 import androidx.lifecycle.Lifecycle;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.LifecycleRegistry;
+import com.google.android.gms.wearable.DataItemAsset;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
@@ -45,9 +47,11 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
             Manifest.permission.WRITE_EXTERNAL_STORAGE,
     };
     private static final int PERMISSION_REQUEST_CODE = 0;
+    private DataLayerSender dataLayerSender;
 
     private Button buttonStart;
     private Button buttonStop;
+    private Button buttonSend;
     private TextView textView;
     private boolean isRunning;
     private Intent sensorListenerIntent = null;
@@ -79,6 +83,7 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
         isRunning = false;
         buttonStart = findViewById(R.id.buttonStart);
         buttonStop = findViewById(R.id.buttonStop);
+        buttonSend = findViewById(R.id.buttonSend);
         textView = findViewById(R.id.textView);
         buttonStop.setEnabled(false);
 
@@ -106,6 +111,15 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
                     sensorListenerIntent = null;
                 }
                 isRunning = false;
+                return true;
+            }
+        });
+        buttonSend.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                // TODO: send file using data layer API
+                String message = "Hello from the other side! --Huawei";
+                dataLayerSender.send(message);
                 return true;
             }
         });
@@ -146,9 +160,12 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
         lifecycleRegistry = new LifecycleRegistry(this);
         lifecycleRegistry.markState(Lifecycle.State.CREATED);
 
+        dataLayerSender = new DataLayerSender(this);
+
         this.getLifecycle().addObserver(new LogcatLogger(logFile));
         this.getLifecycle().addObserver(new SystemInformationLogger(this, sysInfoDirectory));
         this.getLifecycle().addObserver(new BatteryLogger(this, batteryStatusFile));
+        this.getLifecycle().addObserver(dataLayerSender);
     }
 
     @Override
