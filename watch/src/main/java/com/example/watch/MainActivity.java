@@ -119,6 +119,7 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
             public boolean onTouch(View v, MotionEvent event) {
                 // TODO: send file using data layer API
                 String message = "Hello from the other side! --Huawei";
+                Log.d(TAG, "Send button clicked");
                 dataLayerSender.send(message);
                 return true;
             }
@@ -156,16 +157,15 @@ public class MainActivity extends WearableActivity implements LifecycleOwner {
             startActivity(intent);
         }
 
+        dataLayerSender = new DataLayerSender(this);
+
         // Register lifecycle-aware components
         lifecycleRegistry = new LifecycleRegistry(this);
         lifecycleRegistry.markState(Lifecycle.State.CREATED);
 
-        dataLayerSender = new DataLayerSender(this);
-
         this.getLifecycle().addObserver(new LogcatLogger(logFile));
         this.getLifecycle().addObserver(new SystemInformationLogger(this, sysInfoDirectory));
         this.getLifecycle().addObserver(new BatteryLogger(this, batteryStatusFile));
-        this.getLifecycle().addObserver(dataLayerSender);
     }
 
     @Override
